@@ -100,11 +100,14 @@ passport_columns = [
     "passport_expiry_date",
 ]
 
+label_columns = ['label']
+
 
 df_account = pd.DataFrame(columns=account_columns)
 df_description = pd.DataFrame(columns=description_columns)
 df_profile = pd.DataFrame(columns=profile_columns)
 df_passport = pd.DataFrame(columns=passport_columns)
+df_label = pd.DataFrame(columns=label_columns)
 
 for folder_name in os.listdir(data_path):
     folder_path = os.path.join(data_path, folder_name)
@@ -138,8 +141,13 @@ for folder_name in os.listdir(data_path):
                                 data[f'inheritance_details_{key}'] = value
                             print(f'Profile for client {client_id}')
                             df_profile = pd.concat([df_profile, pd.DataFrame([data])], ignore_index=True)
+                        elif file_name == 'label.json':
+                            data['label'] = 1 if data['label'] == 'Accept' else 0
+                            df_label = pd.concat([df_label, pd.DataFrame([data])], ignore_index=True)
+
 
 df_account.to_csv('account.csv', index=False)
 df_profile.to_csv('profile.csv', index=False)
 df_description.to_csv('description.csv', index=False)
 df_passport.to_csv('passport.csv', index=False)
+df_label.to_csv('labels.csv', index=False)
