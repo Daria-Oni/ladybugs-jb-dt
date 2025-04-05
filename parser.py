@@ -74,7 +74,15 @@ profile_columns = [
     "investment_experience",
     "type_of_mandate",
     "preferred_markets",
-    "currency"
+    "currency",
+    'secondary_school_name',
+    'secondary_school_graduation_year',
+    'aum_savings',
+    'aum_inheritance',
+    'aum_real_estate_value',
+    'inheritance_details_relationship',
+    'inheritance_details_inheritance_year',
+    'inheritance_details_profession'
 ]
 
 passport_columns = [
@@ -122,6 +130,12 @@ for folder_name in os.listdir(data_path):
                             print(f'Description for client {client_id}')
                             df_description = pd.concat([df_description, pd.DataFrame([data])], ignore_index=True)
                         elif file_name == 'client_profile.json':
+                            for key, value in data['secondary_school'].items():
+                                data[f'secondary_school_{key}'] = value
+                            for key, value in data['aum'].items():
+                                data[f'aum_{key}'] = value
+                            for key, value in data['inheritance_details'].items():
+                                data[f'inheritance_details_{key}'] = value
                             print(f'Profile for client {client_id}')
                             df_profile = pd.concat([df_profile, pd.DataFrame([data])], ignore_index=True)
 
