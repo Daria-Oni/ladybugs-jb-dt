@@ -69,5 +69,7 @@ class InformationChecker:
         for index, row in self.df_labels.iterrows():
             if row['label'] == 1 and row['client_id'] in self.rejections:
                 print(f'{row['client_id']} is wrong')
+
     def create_mask(self):
-        pass
+        self.basic_matching()
+        return self.rejections
