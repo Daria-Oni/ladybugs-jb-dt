@@ -23,7 +23,6 @@ class InformationChecker:
             profile_row = self.df_profile.loc[self.df_profile['client_id'] == row['client_id']]
             profile_row = profile_row.iloc[0]
 
-
             # 1. Checking the name.
             profile_name = str(profile_row['name']).lower().replace(" ", "")
             first_name = str(row['first_name']).lower().replace(" ", "")
