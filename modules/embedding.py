@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 from transformers import BertTokenizer, BertModel
+from nltk.tokenize import sent_tokenize
 import torch
+
+import nltk
+nltk.download('punkt_tab')
 
 def get_bert_embedding(text, tokenizer, model):
     # Tokenize input text
@@ -15,6 +19,17 @@ def get_bert_embedding(text, tokenizer, model):
     
     return cls_embedding.squeeze().numpy()  # Convert to 1D numpy array
 
+def get_average_embedding(text, tokenizer, model):
+    sentences = sent_tokenize(text)  # Split text into sentences
+    embeddings = []
+    
+    for sentence in sentences:
+        embedding = get_bert_embedding(sentence, tokenizer, model)
+        embeddings.append(embedding)
+    
+    # Average the sentence embeddings to get one final embedding for the text
+    return np.mean(embeddings, axis=0)
+
 def text_columns_to_vector(df, column_list):
     # Load pre-trained BERT base model and tokenizer
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -23,7 +38,7 @@ def text_columns_to_vector(df, column_list):
 
     df = df.copy()
     for col in column_list:
-        df.loc[:, f'embedded_{col}'] = df[col].apply(lambda x: get_bert_embedding(str(x), tokenizer, model))
+        df.loc[:, f'embedded_{col}'] = df[col].apply(lambda x: get_average_embedding(str(x), tokenizer, model))
     return df
         
 # # Load your data

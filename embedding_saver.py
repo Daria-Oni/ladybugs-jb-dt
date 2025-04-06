@@ -14,4 +14,4 @@ text_fields = ["Summary Note", "Family Background", "Education Background", "Occ
 # Creating the embedding for the descriptions
 df = text_columns_to_vector(df_description, text_fields)
 
-df.to_csv('description_embedded.csv')
+df.to_csv('description_emb.csv')
