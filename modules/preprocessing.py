@@ -9,25 +9,39 @@ from sklearn.model_selection import train_test_split
 from modules.model import HybridModel
 from sklearn.metrics import accuracy_score
 
-df_account = pd.read_csv("account.csv")
-df_profile = pd.read_csv("profile.csv")
-df_description = pd.read_csv("description.csv")
-df_passport = pd.read_csv("passport.csv")
-df_labels = pd.read_csv("labels.csv")  
-df_embeddings = pd.read_csv("description_embedded.csv")
 
-categorical_cols = [
-    "currency",
-    "investment_experience",
-    "type_of_mandate", "gender", "marital_status",
-]
+# Function to calculate education level
+def calculate_education_level(row):
+    # Check if secondary_school is not NaN, and add 1 if true
+    secondary_school_count = 1 if pd.notna(row['secondary_school']) else 0
+    # Count the number of entries in higher_education (length of the list)
+    higher_education_count = len(row['higher_education']) if isinstance(row['higher_education'], list) else 0
+    # Total education level
+    return secondary_school_count + higher_education_count
 
-# Join the data from csv's
-df = pd.concat([df_account, df_profile, df_description, df_passport, df_labels, df_embeddings], axis=1)
-df = df.loc[:, ~df.columns.duplicated()]
-df = pd.get_dummies(df, columns=categorical_cols)
-
-print(df[df['aum_real_estate_value'].isna()])
+# Function to calculate the difference between the lowest start year and biggest end year
+def calculate_year_diff(emp_history):
+    # Extract all start years and end years from the employment history list
+    if len(emp_history) == 0:
+        return 0
+    
+    end_years = []
+    for entry in emp_history:
+        if entry['end_year'] == None:
+            end_years.append(2025)
+        else:
+            end_years.append(entry['end_year'])
+    start_years = [entry['start_year'] for entry in emp_history]
+    # end_years = [entry['end_year'] for entry in emp_history]
+    
+    # Find the minimum start year and maximum end year
+    min_start_year = min(start_years)
+    max_end_year = max(end_years)
+    
+    if max_end_year == None:
+        max_end_year = 2025
+    # Calculate and return the difference
+    return max_end_year - min_start_year
 
 # Function to classify durations
 def classify_duration(duration):

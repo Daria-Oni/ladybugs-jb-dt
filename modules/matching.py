@@ -64,6 +64,37 @@ class InformationChecker:
                 self.rejections.append(row['client_id'])
                 continue
 
+        # Checking the account and the profile
+        for index, account_row in self.df_account.iterrows():
+            # Retrieve the corresponding profile entry
+            profile_row = self.df_profile.loc[self.df_profile['client_id'] == account_row['client_id']]
+            if profile_row.empty:
+                print(f"No profile found for client {account_row['client_id']}")
+                continue
+            profile_row = profile_row.iloc[0]
+            # Fields to check for consistency
+            fields_to_check = [
+                'currency', 'address_city', 'address_street_name', 'address_street_number',
+                'address_postal_code', 'phone_number', 'email_address'
+            ]
+            
+            for field in fields_to_check:
+                if str(account_row[field]).strip().lower() != str(profile_row[field]).strip().lower():
+                    print(f'Rejected client {profile_row['client_id']}for {field}')
+                    self.rejections.append(profile_row['client_id'])
+
+        # Checking the account and passport
+        for index, account_row in self.df_account.iterrows():
+            passport_row = self.df_passport.loc[self.df_passport['client_id'] == account_row['client_id']]
+            passport_row = passport_row.iloc[0]
+            fields_to_check = [
+                 "first_name", "middle_name", "last_name", "passport_number", "passport_number",
+            ]
+            for field in fields_to_check:
+                if str(account_row[field]).strip().lower() != str(passport_row[field]).strip().lower():
+                    print(f'Rejected client {passport_row['client_id']}for {field}')
+                    self.rejections.append(passport_row['client_id'])
+
         print(f'Number of rejections is {len(self.rejections)}')
         for index, row in self.df_labels.iterrows():
             if row['label'] == 1 and row['client_id'] in self.rejections:
