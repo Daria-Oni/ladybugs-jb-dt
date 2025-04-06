@@ -2,6 +2,7 @@
 
 import zipfile
 import os
+import glob
 
 import json
 import pandas as pd
@@ -11,24 +12,36 @@ import numpy as np
 current_directory = os.getcwd()
 print(current_directory)
 
-# Unzipping the client files and creating the csv
-extract_to = f'{current_directory}/data'
-os.makedirs(extract_to, exist_ok=True)
+def unzip_files(extract_to):
+    if extract_to == f'{current_directory}/train':
+        for i in range(1,5):
+            zip_path = f'{current_directory}/datathon_part{i}.zip'
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_to)
 
-def unzip_files():
-    for i in range(1,5):
-        zip_path = f'{current_directory}/datathon_part{i}.zip'
+        for i in range(10000):
+            zip_path = f'{extract_to}/client_{i}.zip'
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(f'{extract_to}/client_{i}')
+            os.remove(zip_path)
+            print(f"Deleted: {zip_path}")
+    else:
+        zip_path = f'{current_directory}/datathon_part_1.zip'
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_to)
-
-    for i in range(10000):
-        zip_path = f'{extract_to}/client_{i}.zip'
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(f'{extract_to}/client_{i}')
-        os.remove(zip_path)
-        print(f"Deleted: {zip_path}")
-
-data_path = os.path.join(current_directory, 'data')
+                zip_ref.extractall(extract_to)
+        client_zip_files = glob.glob(os.path.join(extract_to, 'client_*.zip'))
+        for zip_file in client_zip_files:
+            client_folder = zip_file.replace('.zip', '')
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                zip_ref.extractall(client_folder)
+            os.remove(zip_file)
+            print(f"Extracted and deleted: {zip_file}")
+        # for i in range(10000):
+        #     zip_path = f'{extract_to}/client_{i}.zip'
+        #     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        #         zip_ref.extractall(f'{extract_to}/client_{i}')
+        #     os.remove(zip_path)
+        #     print(f"Deleted: {zip_path}")
 
 account_columns = [
     "name",
@@ -104,7 +117,7 @@ passport_columns = [
 label_columns = ['label']
 
 
-def create_csvs():
+def create_csvs(data_path):
     df_account = pd.DataFrame(columns=account_columns)
     df_description = pd.DataFrame(columns=description_columns)
     df_profile = pd.DataFrame(columns=profile_columns)
@@ -148,8 +161,8 @@ def create_csvs():
                                 df_label = pd.concat([df_label, pd.DataFrame([data])], ignore_index=True)
 
 
-    df_account.to_csv('account.csv', index=False)
-    df_profile.to_csv('profile.csv', index=False)
-    df_description.to_csv('description.csv', index=False)
-    df_passport.to_csv('passport.csv', index=False)
-    df_label.to_csv('labels.csv', index=False)
+    df_account.to_csv(f'{data_path}/account.csv', index=False)
+    df_profile.to_csv(f'{data_path}/profile.csv', index=False)
+    df_description.to_csv(f'{data_path}/description.csv', index=False)
+    df_passport.to_csv(f'{data_path}/passport.csv', index=False)
+    df_label.to_csv(f'{data_path}/labels.csv', index=False)
