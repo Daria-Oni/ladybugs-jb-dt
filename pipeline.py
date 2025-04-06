@@ -40,8 +40,6 @@ feature_cols = ['Age', 'education_level',  'employment_duration', 'Total_Assets_
 
 
 df['investment_horizon'] = df['investment_horizon'].apply(classify_duration)
-
-
 df['Total_Assets'] = df['aum_savings'] + df['aum_inheritance'] + df['aum_real_estate_value']
 df['Total_Assets'] = df.apply(
     lambda row: row['Total_Assets'] * 1.06 if row['currency'] == 'CHF' 
@@ -66,6 +64,8 @@ df['education_level'] = df['education_level'].apply(len)
 df['employment_history'] = df['employment_history'].apply(lambda x: ast.literal_eval(x))
 df['employment_duration'] = df['employment_history'].apply(calculate_year_diff)
 df['has_switzerland'] = df['preferred_markets'].apply(lambda x: 1 if 'Switzerland' in x else 0)
+
+
 
 df = df[feature_cols+categorical_col+['client_id', 'label']]
 df = pd.get_dummies(df, columns=categorical_col)
@@ -97,9 +97,12 @@ for index, row in test_df.iterrows():
         predict = model.predict_proba(row[feature_cols].values.reshape(1, -1))[:, 1]
         predictions.loc[index, 'label'] = (predict[0] > 0.5).astype(int)
 
-predictions.to_csv('solution2.csv', header=False, index=False, sep=';')
-score = accuracy_score(test_df['label'], predictions)
+score = accuracy_score(test_df['label'], predictions['label'])
 print(score)
+
+predictions['label'] = predictions['label'].map({0: 'Reject', 1: 'Accept'})
+predictions.to_csv('ladybug.csv', header=False, index=False, sep=';')
+
 
 # model  = HybridModel()
 # model.fit(X_train.values, y_train.values)
