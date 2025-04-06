@@ -13,6 +13,10 @@ class HybridModel:
 
     def predict(self, X):
         return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        # Predict the probabilities for the binary classes (class 0 and class 1)
+        return self.model.predict_proba(X)  # Returns probability of class 1 (positive class)
 
     def evaluate(self, X, y):
         predictions = self.predict(X)

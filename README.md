@@ -1,3 +1,4 @@
+### YOu can see how to run our solution below.
 ### Introduction
 Private banks face a crucial challenge in ensuring that client onboarding processes are efficient, secure, and compliant with regulatory requirements. Manual verification of client data can be time-consuming and prone to errors, leading to delayed or incorrect onboarding decisions.
 
@@ -44,3 +45,17 @@ Solution provided will be evaluated according to following criteria:
 
 ### Hand-in
 To evaluate prediction score, classification labels have to be provided in the same format as in the provided example. Name your submission csv file as "<team_name>.csv". Please fork this repository, start developing your project, and ensure your final submission, including your code, is uploaded to your forked repository **before Sunday 12:00pm**, as this will be used to evaluate your solution.
+
+
+## Running Solution
+First you need to create a python venv.
+mkdir venv
+cd venv
+python -m venv .
+
+Then in the venv
+source bin/activate
+
+Then you can install the requirements using pip install -r requirements.txt
+
+Once the venv is created, you can run the python3 pipeline.py command to produce the solutions.

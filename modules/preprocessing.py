@@ -57,7 +57,7 @@ def classify_duration(duration):
         
         if month_count <= 1:
             return "Short"
-        elif month_count <= 6:
+        elif month_count < 6:
             return "Medium"
         else:
             return "Long"

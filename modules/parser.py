@@ -116,7 +116,6 @@ passport_columns = [
 
 label_columns = ['label']
 
-
 def create_csvs(data_path):
     df_account = pd.DataFrame(columns=account_columns)
     df_description = pd.DataFrame(columns=description_columns)

@@ -1,11 +1,19 @@
+import os
+import zipfile
 import pandas as pd
 import numpy as np
 from transformers import BertTokenizer, BertModel
 from nltk.tokenize import sent_tokenize
 import torch
 
-import nltk
-nltk.download('punkt_tab')
+# import nltk
+# nltk.download('punkt_tab')
+
+import re
+
+def tokenize(text):
+    # Lowercase and extract words/numbers
+    return re.findall(r'\b\w+\b', text.lower())
 
 def get_bert_embedding(text, tokenizer, model):
     # Tokenize input text
@@ -40,69 +48,55 @@ def text_columns_to_vector(df, column_list):
     for col in column_list:
         df.loc[:, f'embedded_{col}'] = df[col].apply(lambda x: get_average_embedding(str(x), tokenizer, model))
     return df
-        
-# # Load your data
-# df1 = pd.read_csv("account.csv")
-# df2 = pd.read_csv("profile.csv")
-# df4 = pd.read_csv("passport.csv")
 
-# # Combine by row index
-# df = pd.concat([df1, df2, df3, df4], axis=1)
-# df = df.loc[:, ~df.columns.duplicated()]
+# Function to get the average Word2Vec vector for a sentence
+def get_average_word2vec(description, model):
+    words = description.split()
+    vectors = []
+    for word in words:
+        if word in model.key_to_index:  # Ensure the word exists in the model's vocabulary
+            vectors.append(model[word])
+    if vectors:
+        return np.mean(vectors, axis=0)
+    else:
+        return np.zeros(model.vector_size)  # Return a zero vector if no words are in the model
 
-# # ---- STEP 1: Drop unnecessary fields ----
-# drop_cols = [
-#     "name", "first_name", "middle_name", "last_name",
-#     "passport_number", "passport_mrz", "address_street_name"
-# ]
-# df = df.drop(columns=[col for col in drop_cols if col in df.columns])
+def load_glove_vectors(zip_file):
+    zip_file_path = zip_file # Replace with the path to your zip file
+    extract_dir = 'glove_files/'  # Replace with the directory where you want to extract files
 
-# categorical_cols = [
-#     "currency", "country", "country_code",
-#     "investment_risk_profile", "investment_horizon", "investment_experience",
-#     "type_of_mandate", "gender", "marital_status", "nationality", "country_of_domicile"
-# ]
+    # Create the extraction directory if it doesn't exist
+    if not os.path.exists(extract_dir):
+        os.makedirs(extract_dir, exist_ok=True)
 
-# numeric_cols = [
-# #    "inheritance_details", "real_estate_details"
-# ]
+        # Unzip the file
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_dir)
 
-# # ---- STEP 3: Prepare text input for embeddings ----
-# df[text_fields] = df[text_fields].fillna("")
-# text_inputs = df[text_fields].apply(lambda row: "\n".join(row.values.astype(str)), axis=1).tolist()
+        print(f'Files extracted to {extract_dir}')
 
-# # ---- STEP 4: Prepare tabular features ----
-# tabular_data = df[numeric_cols + categorical_cols].copy()
+    glove_vectors = {}
+    with open(os.path.join(extract_dir, 'glove.42B.300d.txt'), 'r', encoding='utf-8') as file:
+        for line in file:
+            values = line.split()
+            word = values[0]
+            vector = np.asarray(values[1:], dtype='float32')
+            glove_vectors[word] = vector
+    return glove_vectors
 
-# # Preprocessing pipeline
-# preprocessor = ColumnTransformer(transformers=[
-#     ("num", StandardScaler(), numeric_cols),
-#     ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols)
-# ])
-# X_tabular = preprocessor.fit_transform(tabular_data)  # shape: (N, D1)
-
-# # ---- STEP 5: Embed text with NV-Embed ----
-# device = "cuda" if torch.cuda.is_available() else "cpu"
-# model_id = "nvidia/NV-Embed-v2"
-
-# tokenizer = AutoTokenizer.from_pretrained(model_id)
-# model = AutoModel.from_pretrained(model_id).to(device).eval()
-
-# def embed_texts(texts, batch_size=16):
-#     all_embeddings = []
-#     for i in range(0, len(texts), batch_size):
-#         batch = texts[i:i+batch_size]
-#         inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True).to(device)
-#         with torch.no_grad():
-#             outputs = model(**inputs)
-#             embeddings = outputs.last_hidden_state[:, 0]  # CLS token
-#             embeddings = normalize(embeddings, p=2, dim=1)
-#         all_embeddings.append(embeddings.cpu().numpy())
-#     return np.vstack(all_embeddings)
-
-# X_text = embed_texts(text_inputs)  # shape: (N, 1024)
-# print(X_text)
-# print("hello")
-
-# # ---- STEP 6: Combine into hybrid vector ----
-# X_hybrid = np.hstack([X_tabular, X_text])  # shape: (N, D1 + 1024)
+# Function to get the average GloVe vector for a sentence
+def get_glove_embedding(description, glove_vectors):
+    tokens = tokenize(description)
+    vectors = [glove_vectors[word] for word in tokens if word in glove_vectors]
+    
+    for word in vectors:
+        word = word.lower()  # Normalize to lowercase
+        if word in glove_vectors:  # Check if word is in the GloVe dictionary
+            vectors.append(glove_vectors[word])
+    
+    if vectors:
+        # Return the mean of the vectors, or a zero vector if no word is in GloVe
+        return np.mean(vectors, axis=0)
+    else:
+        # Return a zero vector if no valid words
+        return np.zeros(50)  # The dimension should match the GloVe vector size (50 in this case)

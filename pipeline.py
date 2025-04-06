@@ -126,6 +126,16 @@ rejections = checker.create_mask()
 
 predictions = pd.DataFrame()
 
+# for index, row in test_df.iterrows():
+#     predictions.loc[index, 'client_id'] = f'client_{row['client_id']}'
+#     if row['client_id'] in rejections:
+#         predictions.loc[index, 'label'] = 0
+#     else:
+#         predict = model.predict_proba(row[feature_cols].values.reshape(1, -1))[:, 1]
+#         predictions.loc[index, 'label'] = (predict[0] > 0.5).astype(int)
+# score = accuracy_score(test_df['label'], predictions['label'])
+# print(score)
+
 for index, row in df_test.iterrows():
     predictions.loc[index, 'client_id'] = f'client_{row['client_id']}'
     if row['client_id'] in rejections:
