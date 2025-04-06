@@ -66,9 +66,30 @@ class InformationChecker:
                 continue
 
         print(f'Number of rejections is {len(self.rejections)}')
-        for index, row in self.df_labels.iterrows():
-            if row['label'] == 1 and row['client_id'] in self.rejections:
-                print(f"{row['client_id']} is wrong")
+
     def create_mask(self):
         self.basic_matching()
         return self.rejections
+    
+
+    def save_rejections_to_csv(self, filename='rejections.csv'):
+        if self.rejections:  # Only save if there are rejections
+            df_rejections = pd.DataFrame({
+                'client_id': self.rejections,
+                'prediction': [0] * len(self.rejections)  # Assuming '0' means rejection
+            })
+            df_rejections.to_csv(filename, index=False)
+            print(f"Rejections saved to {filename}")
+        else:
+            print("No rejections to save.")
+
+
+
+df_passport = pd.read_csv('passport.csv')
+df_account = pd.read_csv('account.csv')
+df_desc = pd.read_csv('description.csv')
+df_profile = pd.read_csv('profile.csv')
+df_labels = pd.read_csv('labels.csv')
+checker = InformationChecker(df_passport, df_account, df_desc, df_profile, df_labels)
+checker.create_mask()
+checker.save_rejections_to_csv()
