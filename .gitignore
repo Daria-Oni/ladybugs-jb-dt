@@ -2,8 +2,5 @@
 .DS_Store
 datathon_part*/
 data/
-<<<<<<< Updated upstream
 description_embedded.csv
-=======
 venv/
->>>>>>> Stashed changes
