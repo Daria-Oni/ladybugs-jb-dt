@@ -1,16 +1,18 @@
 import pandas as pd
 import numpy as np
+import ast
 
 
 # This class checks the whether the given information is consistent before giving it to the model.
 
 class InformationChecker:
-    def __init__(self, df_passport, df_account, df_desc, df_profile, df_labels):
+    def __init__(self, df_passport, df_account, df_desc, df_profile, df_labels, test_mode=False):
         self.df_passport = df_passport
         self.df_account = df_account
         self.df_desc = df_desc
         self.df_profile = df_profile
         self.df_labels = df_labels
+        self.test_mode = test_mode
         self.rejections = []
 
     # TODO: Understanding the complex matching
@@ -95,10 +97,29 @@ class InformationChecker:
                     print(f'Rejected client {passport_row['client_id']}for {field}')
                     self.rejections.append(passport_row['client_id'])
 
+        # Checking the preffered_markets 
+        # merged_df = self.df_profile.merge(self.df_passport, on='client_id').merge(self.df_account, on='client_id')
+
+        # # Step 2: Convert 'preferred_markets' column to actual lists
+        # merged_df['preferred_markets'] = merged_df['preferred_markets'].apply(ast.literal_eval)
+        # # print(merged_df.columns)
+        # # print('***')
+        # # return
+        # for index, row in merged_df.iterrows():
+        #     options = []
+        #     options.append(row['country'])
+        #     options.append(row['country_of_domicile_x'])
+        #     for market in row['preferred_markets']:
+        #         if market not in options:
+        #             print(f'Rejected client {row['client_id']}for not amtching infooo')
+        #             self.rejections.append(row['client_id'])
+
         print(f'Number of rejections is {len(self.rejections)}')
-        for index, row in self.df_labels.iterrows():
-            if row['label'] == 1 and row['client_id'] in self.rejections:
-                print(f"{row['client_id']} is wrong")
+        
+        if not self.test_mode: 
+            for index, row in self.df_labels.iterrows():
+                if row['label'] == 1 and row['client_id'] in self.rejections:
+                    print(f"{row['client_id']} is wrong")
     def create_mask(self):
         self.basic_matching()
         return self.rejections
